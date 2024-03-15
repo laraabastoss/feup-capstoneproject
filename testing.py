@@ -1,7 +1,7 @@
 import collections
 import random
 from river import sketch
-from algoritmos.space_saving import SpaceSaving
+from space_saving import SpaceSaving
 
 
 # Create an instance of SpaceSaving with k=5
