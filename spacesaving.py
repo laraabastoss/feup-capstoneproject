@@ -25,6 +25,7 @@ class SpaceSaving(base.Base):
 
         elif len(self.counts) > self.k:
             min_count_key = min(self.counts, key=self.counts.get)
+            self.counts[x] = self.counts.get(min_count_key) + 1
             del self.counts[min_count_key]
 
         else:
