@@ -23,18 +23,20 @@ class HyperLogLog(base.Base):
         return 0.7213 / (1 + 1.079 / m)
 
     @staticmethod
-    def rho(w: int, b: int) -> int:
+    def left_most_one(w: int) -> int:
         return len(bin(w)) - bin(w).rfind('1') - 1
 
     def update(self, x: typing.Hashable):
         hash_val = hash(x)
         j = hash_val & (self.m - 1)
         w = hash_val >> self.b
+        self.registers[j] = max(self.registers[j], self.left_most_one(w))
 
-        self.registers[j] = max(self.registers[j], self.rho(w, self.b))
-
+    
     def count(self) -> int:
         est = self.alpha * self.m ** 2 / sum(2 ** (-reg) for reg in self.registers)
+
+        # correction
         if est <= 5 / 2 * self.m:
             v = self.registers.count(0)
             if v != 0:

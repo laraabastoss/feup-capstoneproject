@@ -19,7 +19,6 @@ class SpaceSaving(base.Base):
     def update(self, x: typing.Hashable, w: int = 1):
 
         """Update the counts with the given element."""
-        print(self.counts)
         if x in self.counts:
             self.counts[x] += w
 
