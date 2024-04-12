@@ -23,9 +23,13 @@ class HierarchicalHeavyHitters(base.Base):
         current.ge += w
 
         for i in range(len(x)):
+
             sub_key = x[:i + 1]
+
             if sub_key not in current.children:
+
                 current.children[sub_key] = HierarchicalHeavyHitters.Node()
+                
             current = current.children[sub_key]
             current.ge += w
 
@@ -62,4 +66,38 @@ class HierarchicalHeavyHitters(base.Base):
             return
 
         for child_key, child_node in node.children.items():
-            self._output_node(child_node, cumulative_ge + node.ge, phi, result)
+            self._output_node(child_node, cumulative_ge + node.ge, phi, result)    
+            
+            
+    def __getitem__(self, key: typing.Hashable) -> int:
+       
+        return self._get_count(self.root, key)
+        
+    def _get_count(self, node: HierarchicalHeavyHitters.Node, key: typing.Hashable) -> int:
+             
+        if not key:
+            return node.ge
+        
+        first_key = key[0]
+        if first_key in node.children:
+            return self._get_count(node.children[first_key], key[1:])
+        
+        return 0
+    
+    def totals(self) -> int:
+        
+        return self._count_entries(self.root)
+    
+    def _count_entries(self, node: HierarchicalHeavyHitters.Node) -> int:
+    
+        total = 1  
+        
+        for child_node in node.children.values():
+            total += self._count_entries(child_node)
+        
+        return total
+
+
+
+
+    
