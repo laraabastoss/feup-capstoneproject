@@ -21,7 +21,7 @@ rng = random.Random(7)
 counter = collections.Counter()
 
 # Generate random values and update the SpaceSaving, HyperLogLog, HierarchicalHeavyHitters, and Counter
-for v in [1,2,3,4,5,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,1,23,4,5,6,1,2,3,4,5]:
+for v in [12,23,35,45,55,16,25,36,36,36,36,36]:
     spacesaving.update(v)
     hyperloglog.update(v)
     hierarchical_hh.update(str(v))
@@ -37,17 +37,23 @@ print(hierarchical_hh.output(phi=100))
 print("Counter counts:")
 # print(counter)
 
-# Test some specific values
-print("Count of 2 in Counter:", counter[2])
-print("Count of 2 in SpaceSaving:", spacesaving[2])
-print("Count of 2 in HierarchicalHeavyHitters:", hierarchical_hh[str(2)])
+print(hierarchical_hh)
+
+phi = 100
+
+# Extract heavy hitters
+heavy_hitters = hierarchical_hh.output(phi)
+
+# Print the heavy hitters
+print("Heavy Hitters:")
+for item in heavy_hitters:
+    print(item)
 
 
 
-
-print("Count of 7 in Counter:", counter[7])
-print("Count of 7 in SpaceSaving:", spacesaving[7])
-print("Count of 7 in HierarchicalHeavyHitters:", hierarchical_hh[str(7)])
+print("Count of 36665 in Counter:", counter[36])
+print("Count of 36665 in SpaceSaving:", spacesaving[36])
+print("Count of 36665 in HierarchicalHeavyHitters:", hierarchical_hh[str(36)])
 
 # Print lengths of Counter and SpaceSaving
 print("Length of Counter:", len(counter))
