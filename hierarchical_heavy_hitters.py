@@ -1,6 +1,8 @@
 from __future__ import annotations
 import typing
 
+import math
+
 from river import base
 
 
@@ -12,64 +14,87 @@ class HierarchicalHeavyHitters(base.Base):
             self.max_e = 0
             self.children: typing.Dict[typing.Hashable, HierarchicalHeavyHitters.Node] = {}
 
-    def __init__(self, k: int, epsilon: float, threshold_ratio: float, w: int = 100):
+    def __init__(self, k: int, epsilon: float, threshold_ratio: float):
         self.k = k
         self.epsilon = epsilon
-        self.threshold_ratio = threshold_ratio
-        self.root = HierarchicalHeavyHitters.Node()
-        self.w = w  # Number of updates before compression
-        self.update_count = 0
+        self.bucketSize = math.floor(1/epsilon)
+        self.N = 0
+       # self.threshold_ratio = threshold_ratio
+        self.root = None
+   
 
     def update(self, x: typing.Hashable, w: int = 1):
-        current = self.root
-        delta = 0
+
+        self.N += 1
+        current = None
         parent_me = 0
+     
+        for i in range(len(x) + 1):
+            sub_key = x[:i]
 
-        for i in range(len(x)):
-            sub_key = x[:i + 1]
+            if sub_key == '':
 
-            if sub_key not in current.children:
+                if self.root == None:
+
+                    self.root = HierarchicalHeavyHitters.Node()
+                    self.root.delta_e = self.currentBucket() - 1
+                    self.root.max_e = self.root.delta_e
+                    parent_me = self.root.max_e
+            
+                current = self.root
+                continue
+
+            elif sub_key in current.children :
+
+                if sub_key!=x:
+                    current = current.children[sub_key]
+                    continue
+
+                if sub_key==x:
+                    current = current.children[sub_key]
+                    current.ge += w
+
+      
+            elif sub_key not in current.children:
+
                 current.children[sub_key] = HierarchicalHeavyHitters.Node()
-            
-            current = current.children[sub_key]
-            
-            current.delta_e = max(current.delta_e, parent_me)
-            delta += current.ge
+                current = current.children[sub_key]
+                current.delta_e = parent_me
+                current.max_e = parent_me
 
-            if sub_key == x:
-                current.ge += w
+                if sub_key==x:
+                    current.ge += w
 
-            parent_me = max(parent_me, current.max_e)
+        self.compress()
 
-        parent = self.root
-        for i in range(len(x)):
-            parent.delta_e = max(parent.delta_e, current.ge - w)
-            parent = parent.children[x[:i + 1]]
-
-        self.update_count += 1
-        if self.update_count >= self.w:
-            self.compress()
-            self.update_count = 0
+    def currentBucket(self):
+        return math.ceil(self.N / self.bucketSize)
 
     def compress(self):
-        self._compress_node(self.root, 0)
+    
+        if (self.N % self.bucketSize == 0):
+            self._compress_node(self.root)
 
-    def _compress_node(self, node: HierarchicalHeavyHitters.Node, current_bucket: int):
+    def _compress_node(self, node: HierarchicalHeavyHitters.Node):
+        print("new func")
+        print(node)
+
         if not node.children:
             return
 
         for child_key, child_node in list(node.children.items()):
-            self._compress_node(child_node, current_bucket)
 
-            threshold = self.epsilon * current_bucket
+            if not child_node.children=={} :
+                self._compress_node(child_node)
+            
+            else:
+          
+                if child_node.ge + child_node.delta_e <= self.currentBucket() - 1:
+                    node.ge += child_node.ge
+                    node.max_e = max (node.max_e, node.ge + node.delta_e)
+                    del node.children[child_key]
 
-            if child_node.ge + child_node.delta_e <= threshold:
-                del node.children[child_key]
-                node.max_e = max(node.max_e, child_node.max_e)
-                continue
-
-      
-            node.max_e = max(node.max_e, child_node.max_e)
+            
 
     def output(self, phi: float) -> list[typing.Hashable]:
         result = []
@@ -97,8 +122,6 @@ class HierarchicalHeavyHitters(base.Base):
 
 
                 current = current.children[sub_key]
-
-                print(current.ge)
 
                 if sub_key == key:
                
