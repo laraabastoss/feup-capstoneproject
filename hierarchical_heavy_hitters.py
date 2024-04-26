@@ -12,14 +12,15 @@ class HierarchicalHeavyHitters(base.Base):
             self.ge = 0
             self.delta_e = 0
             self.max_e = 0
+            self.fe = 0
+            self.Fe = 0
             self.children: typing.Dict[typing.Hashable, HierarchicalHeavyHitters.Node] = {}
 
-    def __init__(self, k: int, epsilon: float, threshold_ratio: float):
+    def __init__(self, k: int, epsilon: float):
         self.k = k
         self.epsilon = epsilon
         self.bucketSize = math.floor(1/epsilon)
         self.N = 0
-       # self.threshold_ratio = threshold_ratio
         self.root = None
    
 
@@ -76,8 +77,7 @@ class HierarchicalHeavyHitters(base.Base):
             self._compress_node(self.root)
 
     def _compress_node(self, node: HierarchicalHeavyHitters.Node):
-        print("new func")
-        print(node)
+    
 
         if not node.children:
             return
@@ -98,19 +98,33 @@ class HierarchicalHeavyHitters(base.Base):
 
     def output(self, phi: float) -> list[typing.Hashable]:
         result = []
-        self._output_node(self.root, 0, phi, result)
+        self.root.fe = 0
+        self.root.Fe = 0
+
+        for _, child_node in list(self.root.children.items()):
+            child_node.fe = 0
+            child_node.Fe = 0
+
+        self._output_node(self.root, phi, result)
         return result
 
-    def _output_node(self, node: HierarchicalHeavyHitters.Node, cumulative_ge: int, phi: float, result: list):
-        if not node.children:
-       
-            if cumulative_ge + node.ge + node.delta_e >= phi:
-                result.append(node)
-            return
+    def _output_node(self, node: HierarchicalHeavyHitters.Node, phi: float, result: list):
 
-        for child_key, child_node in node.children.items():
-            self._output_node(child_node, cumulative_ge + node.ge, phi, result)    
-            
+        if not node.children:
+            return
+        
+        for child_key, child_node in list(node.children.items()):
+
+            if not child_node.children=={} :
+                self._output_node(child_node, phi, result)
+
+            if child_node.ge + node.ge + node.delta_e >= phi * self.N:
+                result.append((child_key,child_node.fe + child_node.ge, child_node.fe + child_node.ge + child_node.delta_e))
+
+            else:
+                node.Fe += child_node.Fe + child_node.ge
+
+            node.fe += child_node.fe + child_node.ge
             
     def __getitem__(self, key: typing.Hashable) -> int:
 
@@ -126,11 +140,11 @@ class HierarchicalHeavyHitters(base.Base):
                 if sub_key == key:
                
                    return current.ge
-
+ 
             
     def totals(self) -> int:
         
-        return self._count_entries(self.root)
+        return self._count_entries(self.root) -1
     
     def _count_entries(self, node: HierarchicalHeavyHitters.Node) -> int:
     
