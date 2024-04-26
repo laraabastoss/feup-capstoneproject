@@ -20,13 +20,19 @@ rng = random.Random(7)
 
 counter = collections.Counter()
 
-with open('data/chess.txt', 'r') as f:
-    lines = f.readlines()
-
-
-for line in [1,2,21,31,34,212,3]:
+'''
+for line in [1,2,21,31,34,212,3,24]:
 
     hierarchical_hh.update(str(line))
+'''
+
+with open('data/chess.txt', 'r') as f:
+    for line in f:
+        elements = line.strip().split()  # Split the line into individual elements
+        for element in elements:
+            hierarchical_hh.update(element)
+
+
 
 '''
 print("HierarchicalHeavyHitters counts:")
@@ -36,7 +42,6 @@ print(hierarchical_hh.output(phi=100))
 print(hierarchical_hh)
 
 phi = 0.1
-
 
 # Extract heavy hitters
 heavy_hitters = hierarchical_hh.output(phi)

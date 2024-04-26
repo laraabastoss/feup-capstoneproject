@@ -26,6 +26,9 @@ class HierarchicalHeavyHitters(base.Base):
 
     def update(self, x: typing.Hashable, w: int = 1):
 
+        if (x==str(16)):
+            print(16)
+
         self.N += 1
         current = None
         parent_me = 0
@@ -40,18 +43,18 @@ class HierarchicalHeavyHitters(base.Base):
                     self.root = HierarchicalHeavyHitters.Node()
                     self.root.delta_e = self.currentBucket() - 1
                     self.root.max_e = self.root.delta_e
-                    parent_me = self.root.max_e
+                  
             
                 current = self.root
-                continue
 
             elif sub_key in current.children :
 
                 if sub_key!=x:
-                    current = current.children[sub_key]
-                    continue
 
-                if sub_key==x:
+                    current = current.children[sub_key] 
+
+                elif sub_key==x:
+
                     current = current.children[sub_key]
                     current.ge += w
 
@@ -66,6 +69,8 @@ class HierarchicalHeavyHitters(base.Base):
                 if sub_key==x:
                     current.ge += w
 
+            parent_me = current.max_e
+
         self.compress()
 
     def currentBucket(self):
@@ -75,6 +80,7 @@ class HierarchicalHeavyHitters(base.Base):
     
         if (self.N % self.bucketSize == 0):
             self._compress_node(self.root)
+        
 
     def _compress_node(self, node: HierarchicalHeavyHitters.Node):
     
@@ -91,10 +97,11 @@ class HierarchicalHeavyHitters(base.Base):
           
                 if child_node.ge + child_node.delta_e <= self.currentBucket() - 1:
                     node.ge += child_node.ge
-                    node.max_e = max (node.max_e, node.ge + node.delta_e)
+                    node.max_e = max (node.max_e, child_node.ge + child_node.delta_e)
                     del node.children[child_key]
 
             
+      
 
     def output(self, phi: float) -> list[typing.Hashable]:
         result = []
@@ -135,6 +142,10 @@ class HierarchicalHeavyHitters(base.Base):
                 sub_key = key[:i + 1]
 
 
+                if sub_key not in current.children:
+
+                    return 0
+                
                 current = current.children[sub_key]
 
                 if sub_key == key:
