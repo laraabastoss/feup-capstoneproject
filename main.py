@@ -5,8 +5,10 @@ from space_saving import SpaceSaving
 from hyper_log_log import HyperLogLog
 from hierarchical_heavy_hitters import HierarchicalHeavyHitters
 
+
+counter = sketch.Counter()
 # Create an instance of SpaceSaving with k=1000
-spacesaving = SpaceSaving(k=100000)
+spacesaving = SpaceSaving(k=70)
 
 # Create an instance of HyperLogLog with b=8 (number of bits for registers)
 hyperloglog = HyperLogLog(b=8)
@@ -28,38 +30,38 @@ for line in [1,2,21,31,34,212,3,24]:
 
 with open('data/chess.txt', 'r') as f:
     for line in f:
-        elements = line.strip().split()  # Split the line into individual elements
+        elements = line.strip().split()
         for element in elements:
-            hierarchical_hh.update(element)
+            counter.update(element)
+            spacesaving.update(element, 1)
+            #hierarchical_hh.update(element)
 
 
+# SpaceSaving tests
+print(spacesaving.counts)
 
 '''
 print("HierarchicalHeavyHitters counts:")
 print(hierarchical_hh.output(phi=100))
-'''
-
 print(hierarchical_hh)
-
 phi = 0.1
-
-# Extract heavy hitters
 heavy_hitters = hierarchical_hh.output(phi)
-
-# Print the heavy hitters
 print(hierarchical_hh.totals())
 print(heavy_hitters)
-
 for item in heavy_hitters:
     print(item)
 
+'''
 
 
-print("Count of 36665 in Counter:", counter[34])
-print("Count of 36665 in SpaceSaving:", spacesaving[34])
-print("Count of 36665 in HierarchicalHeavyHitters:", hierarchical_hh[str(2)])
+
+
+
+print("Count of 62 in Counter:", counter['61'])
+print("Count of 62 in SpaceSaving:", spacesaving['61'])
+#print("Count of 36665 in HierarchicalHeavyHitters:", hierarchical_hh[str(2)])
 
 # Print lengths of Counter and SpaceSaving
 print("Length of Counter:", len(counter))
 print("Length of SpaceSaving:", spacesaving.total())
-print("Length of HyperLogLog:", hyperloglog.count())
+#print("Length of HyperLogLog:", hyperloglog.count())
