@@ -34,6 +34,7 @@ with open('data/chess.txt', 'r') as f:
         for element in elements:
             counter.update(element)
             spacesaving.update(element, 1)
+            hyperloglog.update(element)
             #hierarchical_hh.update(element)
 
 
@@ -57,11 +58,12 @@ for item in heavy_hitters:
 
 
 
-print("Count of 62 in Counter:", counter['61'])
-print("Count of 62 in SpaceSaving:", spacesaving['61'])
+print("Count of 61 in Counter:", counter['61'])
+print("Count of 61 in SpaceSaving:", spacesaving['61'])
+#print("Count of 61 in SpaceSaving:", hyperloglog['61'])
 #print("Count of 36665 in HierarchicalHeavyHitters:", hierarchical_hh[str(2)])
 
 # Print lengths of Counter and SpaceSaving
 print("Length of Counter:", len(counter))
 print("Length of SpaceSaving:", spacesaving.total())
-#print("Length of HyperLogLog:", hyperloglog.count())
+print("Length of HyperLogLog:", hyperloglog.count())
