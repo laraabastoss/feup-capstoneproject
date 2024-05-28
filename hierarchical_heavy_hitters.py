@@ -68,16 +68,17 @@ class HierarchicalHeavyHitters(base.Base):
             self.Fe = 0
             self.children: typing.Dict[typing.Hashable, HierarchicalHeavyHitters.Node] = {}
 
-    def __init__(self, k: int, epsilon: float):
+    def __init__(self, k: int, epsilon: float, get_parent: typing.Callable[[typing.Hashable], typing.Hashable]):
         self.k = k
         self.epsilon = epsilon
         self.bucketSize = math.floor(1/epsilon)
         self.N = 0
         self.root = None
-   
+        self.get_parent = get_parent
 
+ 
     def update(self, x: typing.Hashable, w: int = 1):
-        """Update the count for a given hierarchical key with an optional weight."""
+        """ Update the count for a given hierarchical key with an optional weight.  """
 
         self.N += 1
         current = None
@@ -122,6 +123,42 @@ class HierarchicalHeavyHitters(base.Base):
             parent_me = current.max_e
 
         self.compress()
+
+
+    """"
+    def update(self, x: typing.Hashable, w: int = 1):
+        Update the count for a given hierarchical key with an optional weight.
+
+        self.N += 1
+        current = self.root
+        parent_me = 0
+
+        if current is None:
+            self.root = HierarchicalHeavyHitters.Node()
+            self.root.delta_e = self.currentBucket() - 1
+            self.root.max_e = self.root.delta_e
+            current = self.root
+
+        nodes_to_update = []
+
+        while x:
+            if x in current.children:
+                current = current.children[x]
+            else:
+                new_node = HierarchicalHeavyHitters.Node()
+                new_node.delta_e = parent_me
+                new_node.max_e = parent_me
+                current.children[x] = new_node
+                current = new_node
+
+            nodes_to_update.append(current)
+            x = self.get_parent(x)
+        
+        for node in reversed(nodes_to_update):
+            node.ge += w
+
+        self.compress()
+    """
 
     def currentBucket(self):
         """Calculate the current bucket number based on the total updates processed."""

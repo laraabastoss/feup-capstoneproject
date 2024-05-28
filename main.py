@@ -6,6 +6,12 @@ from hyper_log_log import HyperLogLog
 from hierarchical_heavy_hitters import HierarchicalHeavyHitters
 
 
+def get_parent(key: str) -> str:
+    """Return the parent key for a given dot-separated key."""
+    if '.' in key:
+        return key.rsplit('.', 1)[0]
+    return ''
+
 counter = sketch.Counter()
 # Create an instance of SpaceSaving with k=1000
 spacesaving = SpaceSaving(k=70)
@@ -14,7 +20,7 @@ spacesaving = SpaceSaving(k=70)
 hyperloglog = HyperLogLog(b=8)
 
 # Create an instance of HierarchicalHeavyHitters with k=10, epsilon=0.01, and threshold_ratio=0.5
-hierarchical_hh = HierarchicalHeavyHitters(k=10, epsilon=0.25)
+hierarchical_hh = HierarchicalHeavyHitters(k=10, epsilon=0.25, get_parent=get_parent)
 
 # Create a random number generator
 rng = random.Random(7)
@@ -35,13 +41,14 @@ with open('data/chess.txt', 'r') as f:
             counter.update(element)
             spacesaving.update(element, 1)
             hyperloglog.update(element)
-            #hierarchical_hh.update(element)
+            hierarchical_hh.update(element)
 
 
 # SpaceSaving tests
-print(spacesaving.counts)
+print("SpaceSaving counts:")
+#print(spacesaving.counts)
 
-'''
+
 print("HierarchicalHeavyHitters counts:")
 print(hierarchical_hh.output(phi=100))
 print(hierarchical_hh)
@@ -52,7 +59,7 @@ print(heavy_hitters)
 for item in heavy_hitters:
     print(item)
 
-'''
+
 
 
 
