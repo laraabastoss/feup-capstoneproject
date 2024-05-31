@@ -14,7 +14,7 @@ spacesaving = SpaceSaving(k=70)
 hyperloglog = HyperLogLog(b=8)
 
 # Create an instance of HierarchicalHeavyHitters with k=10, epsilon=0.01, and threshold_ratio=0.5
-hierarchical_hh = HierarchicalHeavyHitters(k=10, epsilon=0.25)
+hierarchical_hh = HierarchicalHeavyHitters(k=100, epsilon=0.001)
 
 # Create a random number generator
 rng = random.Random(7)
@@ -22,11 +22,11 @@ rng = random.Random(7)
 
 counter = collections.Counter()
 
-'''
+
 for line in [1,2,21,31,34,212,3,24]:
 
     hierarchical_hh.update(str(line))
-'''
+
 
 with open('data/chess.txt', 'r') as f:
     for line in f:
@@ -39,31 +39,29 @@ with open('data/chess.txt', 'r') as f:
 
 
 # SpaceSaving tests
-print(spacesaving.counts)
+#print(spacesaving.counts)
 
-'''
+
 print("HierarchicalHeavyHitters counts:")
-print(hierarchical_hh.output(phi=100))
+#print(hierarchical_hh.output(phi=100))
 print(hierarchical_hh)
-phi = 0.1
+phi = 0.5
 heavy_hitters = hierarchical_hh.output(phi)
-print(hierarchical_hh.totals())
-print(heavy_hitters)
+#print(hierarchical_hh.totals())
+#print(heavy_hitters)
 for item in heavy_hitters:
-    print(item)
-
-'''
+    #print(item)
 
 
-
-
-
-print("Count of 61 in Counter:", counter['61'])
-print("Count of 61 in SpaceSaving:", spacesaving['61'])
+#print("Count of 61 in Counter:", counter['61'])
+#print("Count of 61 in SpaceSaving:", spacesaving['61'])
 #print("Count of 61 in SpaceSaving:", hyperloglog['61'])
 #print("Count of 36665 in HierarchicalHeavyHitters:", hierarchical_hh[str(2)])
 
 # Print lengths of Counter and SpaceSaving
+
+    """
 print("Length of Counter:", len(counter))
 print("Length of SpaceSaving:", spacesaving.total())
 print("Length of HyperLogLog:", hyperloglog.count())
+    """
