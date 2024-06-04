@@ -11,8 +11,19 @@ class HierarchicalHeavyHitters(base.Base):
     """Hierarchical Heavy Hitters (HHH) algorithm implementation.
 
     This algorithm is designed to identify the most frequent items in a data stream, while organizing them 
-    hierarchically. The HHH algorithm efficiently tracks and compresses counts of hierarchical items using a bucket-based
-    approach.
+    hierarchically. The information stored about the ancestors of a node is used to predict its fequency more 
+    accurately, making it “hierarchy aware”
+
+    There are two principal phases of the algorithm:
+
+    - Insertion: For every new data element e receive, the algorithm recursively tries to find e in
+    the trie. If it is present, it increments the counter of the element by its weight. Otherwise,
+    its parent is recursively called until finding the closer one or the root is reached.
+
+    - Compression: called after every w updates. The compression phase reduces space by merging unnecessary
+    values, dividing the input into buckets of w elements
+
+
 
     Parameters
     ----------
@@ -32,28 +43,47 @@ class HierarchicalHeavyHitters(base.Base):
 
     Examples
     --------
-    >>> hhh = HierarchicalHeavyHitters(k=5, epsilon=0.01)
+    >>> def custom_parent_func(x, i): # Define function to fetch parent of order i for child x
+    ... if i == 0:
+    ...     return 0  # Define the root value
+    ... return x[:i]
+
+    >>> hierarchical_hh = HierarchicalHeavyHitters(k=100, epsilon=0.001, parent_func=custom_parent_func, root_value=0)
 
     >>> # Update with hierarchical keys
-    >>> hhh.update('a')
-    >>> hhh.update('a.b')
-    >>> hhh.update('a.b.c')
+    >>> for line in [1,2,21,31,34,212,3,24]:
+    ...     hierarchical_hh.update(str(line))
 
-    >>> # Get the count of a specific key
-    >>> hhh['a']
-    1
-    >>> hhh['a.b']
-    1
-    >>> hhh['a.b.c']
-    1
+    >>> print(hierarchical_hh)
+    ge: 0, delta_e: 0, max_e: 0
+    1: 
+        ge: 1, delta_e: 0, max_e: 0
+    2: 
+        ge: 1, delta_e: 0, max_e: 0
+        21: 
+            ge: 1, delta_e: 0, max_e: 0
+            212: 
+                ge: 1, delta_e: 0, max_e: 0
+        24: 
+            ge: 1, delta_e: 0, max_e: 0
+    3: 
+        ge: 1, delta_e: 0, max_e: 0
+        31: 
+            ge: 1, delta_e: 0, max_e: 0
+        34: 
+            ge: 1, delta_e: 0, max_e: 0
 
-    >>> # Output heavy hitters
-    >>> hhh.output(0.1)
-    [('a', 1, 1), ('a.b', 1, 1), ('a.b.c', 1, 1)]
+    >>> phi = 0.01
+    >>> heavy_hitters = hierarchical_hh.output(phi)
+    >>> print(heavy_hitters)
+   [('1', 1, 1), ('212', 1, 1), ('21', 2, 2), ('24', 1, 1), ('2', 4, 4), ('31', 1, 1), ('34', 1, 1), ('3', 3, 3)]
+
+    >>> print( hierarchical_hh['212'])
+    1
 
     References
     ----------
-
+    - [^1]: Graham Cormode, Flip Korn, S. Muthukrishnan, and Divesh Srivastava. Finding hierarchical heavy hitters in streaming data. Proceedings of the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 2010
     """
 
     class Node:
@@ -68,55 +98,49 @@ class HierarchicalHeavyHitters(base.Base):
             self.Fe = 0
             self.children: typing.Dict[typing.Hashable, HierarchicalHeavyHitters.Node] = {}
 
-    def __init__(self, k: int, epsilon: float):
+    def __init__(self, k: int, epsilon: float, parent_func: typing.Callable[[typing.Hashable, int], typing.Hashable] = None, root_value: typing.Hashable = None):
         self.k = k
         self.epsilon = epsilon
         self.bucketSize = math.floor(1/epsilon)
         self.N = 0
-        self.root = None
-   
+        self.root = None if root_value is None else HierarchicalHeavyHitters.Node()
+        self.parent_func = parent_func if parent_func is not None else lambda x, i: x[:i]
+        self.root_value = root_value
 
     def update(self, x: typing.Hashable, w: int = 1):
         """Update the count for a given hierarchical key with an optional weight."""
 
         self.N += 1
-        current = None
+        if self.root is None:
+            self.root = HierarchicalHeavyHitters.Node()
+            self.root.delta_e = self.currentBucket() - 1
+            self.root.max_e = self.root.delta_e
+        
+        current = self.root
         parent_me = 0
-     
+
         for i in range(len(x) + 1):
-            sub_key = x[:i]
+            sub_key = self.parent_func(x, i)
 
-            if sub_key == '':
-
-                if self.root == None:
-
+            if sub_key == self.root_value:
+                if self.root is None:
                     self.root = HierarchicalHeavyHitters.Node()
                     self.root.delta_e = self.currentBucket() - 1
                     self.root.max_e = self.root.delta_e
-                  
-            
                 current = self.root
 
-            elif sub_key in current.children :
-
-                if sub_key!=x:
-
-                    current = current.children[sub_key] 
-
-                elif sub_key==x:
-
-                    current = current.children[sub_key]
+            elif sub_key in current.children:
+                current = current.children[sub_key]
+                if sub_key == x:
                     current.ge += w
 
-      
-            elif sub_key not in current.children:
-
+            else:
                 current.children[sub_key] = HierarchicalHeavyHitters.Node()
                 current = current.children[sub_key]
                 current.delta_e = parent_me
                 current.max_e = parent_me
 
-                if sub_key==x:
+                if sub_key == x:
                     current.ge += w
 
             parent_me = current.max_e

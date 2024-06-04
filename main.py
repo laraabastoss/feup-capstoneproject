@@ -11,10 +11,28 @@ counter = sketch.Counter()
 spacesaving = SpaceSaving(k=70)
 
 # Create an instance of HyperLogLog with b=8 (number of bits for registers)
-hyperloglog = HyperLogLog(b=8)
+hyperloglog = HyperLogLog(b=15)
 
-# Create an instance of HierarchicalHeavyHitters with k=10, epsilon=0.01, and threshold_ratio=0.5
-hierarchical_hh = HierarchicalHeavyHitters(k=100, epsilon=0.001)
+
+'''
+for i in range(100):
+    hyperloglog.update(i)
+
+print("Estimated number of distinct elements:", len(hyperloglog))
+'''
+def custom_parent_func(x, i):
+    if i == 0:
+        return 0  # Define the root value
+    return x[:i]  # Custom parent function
+
+
+def custom_parent_func2(x, i):
+    if i == 0:
+        return str(0)  # Define the root value
+    return str(int(x) - i) # Custom parent function
+
+# Create an instance of HierarchicalHeavyHitters with the new parent function and root value
+hierarchical_hh = HierarchicalHeavyHitters(k=100, epsilon=0.001, parent_func=custom_parent_func, root_value=0)
 
 # Create a random number generator
 rng = random.Random(7)
@@ -42,15 +60,15 @@ with open('data/chess.txt', 'r') as f:
 #print(spacesaving.counts)
 
 
-print("HierarchicalHeavyHitters counts:")
+print( hierarchical_hh['212'])
 #print(hierarchical_hh.output(phi=100))
-print(hierarchical_hh)
-phi = 0.5
+#print(hierarchical_hh)
+phi = 0.01
 heavy_hitters = hierarchical_hh.output(phi)
 #print(hierarchical_hh.totals())
 #print(heavy_hitters)
-for item in heavy_hitters:
-    #print(item)
+print(heavy_hitters)
+
 
 
 #print("Count of 61 in Counter:", counter['61'])
@@ -60,8 +78,8 @@ for item in heavy_hitters:
 
 # Print lengths of Counter and SpaceSaving
 
-    """
+"""
 print("Length of Counter:", len(counter))
 print("Length of SpaceSaving:", spacesaving.total())
 print("Length of HyperLogLog:", hyperloglog.count())
-    """
+"""
