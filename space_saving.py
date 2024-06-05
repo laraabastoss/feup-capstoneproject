@@ -11,7 +11,7 @@ from river import base
 
 class SpaceSaving(base.Base):
 
-    """Space-Saving algorithm for finding heavy hitters.
+    """Space-Saving algorithm for finding heavy hitters.[^1]
 
     The Space-Saving algorithm is designed to find the heavy hitters in a data stream using a
     hash map with fixed amount of memory. It keeps track of the k most frequent items at any 

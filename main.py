@@ -21,18 +21,19 @@ for i in range(100):
 print("Estimated number of distinct elements:", len(hyperloglog))
 '''
 def custom_parent_func(x, i):
-    if i == 0:
-        return 0  # Define the root value
-    return x[:i]  # Custom parent function
+    
+    if i == len(x)+1:
+        return None  # Define the root value
+    return x[:i + 1]  # Custom parent function
 
 
 def custom_parent_func2(x, i):
-    if i == 0:
+    if i == x:
         return str(0)  # Define the root value
     return str(int(x) - i) # Custom parent function
 
 # Create an instance of HierarchicalHeavyHitters with the new parent function and root value
-hierarchical_hh = HierarchicalHeavyHitters(k=100, epsilon=0.001, parent_func=custom_parent_func, root_value=0)
+hierarchical_hh = HierarchicalHeavyHitters(k=100, epsilon=0.001, parent_func=custom_parent_func, root_value=None)
 
 # Create a random number generator
 rng = random.Random(7)
@@ -41,7 +42,7 @@ rng = random.Random(7)
 counter = collections.Counter()
 
 
-for line in [1,2,21,31,34,212,3,24]:
+for line in [ 1,21,31,34,212,3,24]:
 
     hierarchical_hh.update(str(line))
 
@@ -60,14 +61,14 @@ with open('data/chess.txt', 'r') as f:
 #print(spacesaving.counts)
 
 
-print( hierarchical_hh['212'])
+#print( hierarchical_hh['21'])
 #print(hierarchical_hh.output(phi=100))
-#print(hierarchical_hh)
+print(hierarchical_hh)
 phi = 0.01
-heavy_hitters = hierarchical_hh.output(phi)
+#heavy_hitters = hierarchical_hh.output(phi)
 #print(hierarchical_hh.totals())
 #print(heavy_hitters)
-print(heavy_hitters)
+#print(heavy_hitters)
 
 
 
