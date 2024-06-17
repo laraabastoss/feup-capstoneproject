@@ -7,7 +7,7 @@ from river import base
 
 class HyperLogLog(base.Base):
 
-    """HyperLogLog algorithm for cardinality estimation.
+    """HyperLogLog algorithm for cardinality estimation.[^1][^2]
 
     The HyperLogLog algorithm is designed to estimate cardinality of a data set with the aid
     of m bytes of auxiliary memory, know as registers.
@@ -83,6 +83,10 @@ class HyperLogLog(base.Base):
 
     @staticmethod
     def get_alpha(m: int) -> float:
+        """
+        Compute the bias correction constant alpha based on the number of registers.
+        This constant improves the accuracy of the cardinality estimation.
+        """
         if m == 16:
             return 0.673
         if m == 32:
@@ -93,9 +97,17 @@ class HyperLogLog(base.Base):
 
     @staticmethod
     def left_most_one(w: int) -> int:
+        """
+        Find the position of the left-most 1-bit in the binary representation of a number.
+        This helps determine the rank of the hash value.
+        """
         return len(bin(w)) - bin(w).rfind('1') - 1
 
     def update(self, x: typing.Hashable):
+        """
+        Update the registers with the given element.
+        The element is hashed, and the hash value is used to update the appropriate register.
+        """
         hash_val = hash(x)
         j = hash_val & (self.m - 1)
         w = hash_val >> self.b
@@ -103,6 +115,10 @@ class HyperLogLog(base.Base):
 
     
     def count(self) -> int:
+        """
+        Estimate the number of distinct elements.
+        This method uses the harmonic mean of the registers to provide an estimate.
+        """
         est = self.alpha * self.m ** 2 / sum(2 ** (-reg) for reg in self.registers)
 
         if est <= 5 / 2 * self.m:
@@ -115,4 +131,8 @@ class HyperLogLog(base.Base):
             return round(-2 ** 32 * math.log(1 - est / 2 ** 32))
 
     def __len__(self) -> int:
+        """
+        Return the estimated number of distinct elements.
+        This method simply calls the count method.
+        """
         return self.count()

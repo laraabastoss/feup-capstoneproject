@@ -14,7 +14,7 @@ class HierarchicalHeavyHitters(base.Base):
     The Full Ancestry Algorithm leverages the hierarchical structure of the data to provide accurate frequency estimates by taking into account the frequencies of ancestor nodes.
     The algorithm operates in three principal phases:
     - **Insertion:** For every new data element received, the algorithm recursively tries to find the element in the trie. If it is present, it increments the counter of the element by its weight. Otherwise, its parent is recursively called until finding the closest one or the root is reached.
-    - **Compression:** After every `w` updates, the compression phase is triggered to reduce space usage by merging nodes with irrelevant values. dividing the input into buckets of w elements. It merges nodes where the sum of their exact count and estimated error is less than or equal to the current bucket number minus one.
+    - **Compression:** After every `w` updates, the compression phase is triggered to reduce space usage by merging nodes with irrelevant values. It merges nodes where the sum of their exact count and estimated error is less than or equal to the current bucket number minus one.
     - **Output:** This function generates a list of heavy hitters with frequency estimates above a threshold given by phi*N. It traverses the hierarchical tree and aggregates the frequencies of nodes that meet the specified criteria, ensuring that the output reflects the most significant elements in the data stream.
 
     Parameters
@@ -24,7 +24,7 @@ class HierarchicalHeavyHitters(base.Base):
     epsilon
         The error parameter. Smaller values increase the accuracy but also the memory usage.
     parent_func
-        Function to fetch the parent of order i from child x. The function should return the root_value when i reached end of tree and x when i equals 0. If the parameter is not given it defaults to a function that returns the prefix of length i of the input element.
+        Function to fetch the parent of order i from child x. The function should return the root_value when i reached end of tree and x when i equals 0. If this parameter is not given it defaults to a function that returns the prefix of length i of the input element.
     root_value:
         The value of the root node in the hierarchical tree. This parameter defines the starting point of the hierarchy. If no root value is specified, the root will be initialized when the first data element is processed and will have the value of None.
 
@@ -42,11 +42,11 @@ class HierarchicalHeavyHitters(base.Base):
 
     >>> # Define function to fetch parent of order i for child x
     >>> def custom_parent_func(x, i): 
-    ... if i == len(x)+1:
-    ...     return None 
-    ... return x[:i + 1]
+    ...     if i < len(x):
+    ...         return None  #root value
+    ...     return x[:i]
 
-    >>> hierarchical_hh = HierarchicalHeavyHitters(k=10, epsilon=0.001, parent_func=custom_parent_func, root_value=0)
+    >>> hierarchical_hh = HierarchicalHeavyHitters(k=10, epsilon=0.001, parent_func=custom_parent_func, root_value=None)
 
     >>> # Update with elements
     >>> for line in [1,2,21,31,34,212,3,24]:
@@ -55,22 +55,24 @@ class HierarchicalHeavyHitters(base.Base):
     >>> # Print resulting tree
     >>> print(hierarchical_hh)
     ge: 0, delta_e: 0, max_e: 0
-    1: 
-        ge: 1, delta_e: 0, max_e: 0
-    2: 
-        ge: 1, delta_e: 0, max_e: 0
-        21: 
+    : 
+        ge: 0, delta_e: 0, max_e: 0
+        1: 
             ge: 1, delta_e: 0, max_e: 0
-            212: 
+        2: 
+            ge: 1, delta_e: 0, max_e: 0
+            21: 
                 ge: 1, delta_e: 0, max_e: 0
-        24: 
+                212: 
+                    ge: 1, delta_e: 0, max_e: 0
+            24: 
+                ge: 1, delta_e: 0, max_e: 0
+        3: 
             ge: 1, delta_e: 0, max_e: 0
-    3: 
-        ge: 1, delta_e: 0, max_e: 0
-        31: 
-            ge: 1, delta_e: 0, max_e: 0
-        34: 
-            ge: 1, delta_e: 0, max_e: 0
+            31: 
+                ge: 1, delta_e: 0, max_e: 0
+            34: 
+                ge: 1, delta_e: 0, max_e: 0
 
     >>> # Output count of a single element
     >>> print( hierarchical_hh['212'])
@@ -81,6 +83,31 @@ class HierarchicalHeavyHitters(base.Base):
     >>> heavy_hitters = hierarchical_hh.output(phi)
     >>> print(heavy_hitters)
     [('1', 1, 1), ('212', 1, 1), ('21', 2, 2), ('24', 1, 1), ('2', 4, 4), ('31', 1, 1), ('34', 1, 1), ('3', 3, 3)]
+
+    >>> # Define alternative function to fetch parent of order i for child x
+    >>> def custom_parent_func2(x, i): 
+    ...     parts = x.split('.')
+    ...     if i >= len(parts):
+    ...         return None  
+    ...     return '.'.join(parts[:i+1])
+
+    >>> # Update with elements
+    >>> for line in ["123.456","123.123", "456.123"]:
+    ...     hierarchical_hh.update(line)
+
+    >>> # Print resulting tree
+    >>> print(hierarchical_hh)
+    ge: 0, delta_e: 0, max_e: 0
+    123: 
+        ge: 0, delta_e: 0, max_e: 0
+        123.456: 
+            ge: 1, delta_e: 0, max_e: 0
+        123.123: 
+            ge: 1, delta_e: 0, max_e: 0
+    456: 
+        ge: 0, delta_e: 0, max_e: 0
+        456.123: 
+            ge: 1, delta_e: 0, max_e: 0
 
     References
     ----------
@@ -122,12 +149,13 @@ class HierarchicalHeavyHitters(base.Base):
 
         sub_key = x
         i = 0
- 
+
         while str(sub_key)!=str(self.root_value):
      
             sub_key = self.parent_func(x, i)
          
             i+=1
+         
             if str(sub_key) == str(self.root_value):
                 if self.root is None:
                     self.root = HierarchicalHeavyHitters.Node()
@@ -135,6 +163,7 @@ class HierarchicalHeavyHitters(base.Base):
                     self.root.max_e = self.root.delta_e
                 current = self.root
 
+            
             elif sub_key in current.children:
                 current = current.children[sub_key]
                 if str(sub_key) == str(x):

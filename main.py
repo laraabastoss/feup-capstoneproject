@@ -20,20 +20,25 @@ for i in range(100):
 
 print("Estimated number of distinct elements:", len(hyperloglog))
 '''
-def custom_parent_func(x, i):
-    
-    if i == len(x)+1:
-        return None  # Define the root value
-    return x[:i + 1]  # Custom parent function
 
+def custom_parent_func(x, i): 
+    if i > len(x):
+         return None 
+    return x[:i]
 
 def custom_parent_func2(x, i):
     if i == x:
         return str(0)  # Define the root value
     return str(int(x) - i) # Custom parent function
 
+def custom_parent_func3(x, i):
+    parts = x.split('.')
+    if i >= len(parts):
+        return None  
+    return '.'.join(parts[:i+1])
+
 # Create an instance of HierarchicalHeavyHitters with the new parent function and root value
-hierarchical_hh = HierarchicalHeavyHitters(k=100, epsilon=0.001, parent_func=custom_parent_func, root_value=None)
+hierarchical_hh = HierarchicalHeavyHitters(k=100, epsilon=0.001, parent_func=custom_parent_func3, root_value=None)
 
 # Create a random number generator
 rng = random.Random(7)
@@ -42,7 +47,7 @@ rng = random.Random(7)
 counter = collections.Counter()
 
 
-for line in [ 1,21,31,34,212,3,24]:
+for line in [ "123.456","123.123", "456.123"]:
 
     hierarchical_hh.update(str(line))
 
