@@ -11,7 +11,7 @@ counter = sketch.Counter()
 spacesaving = SpaceSaving(k=70)
 
 # Create an instance of HyperLogLog with b=8 (number of bits for registers)
-hyperloglog = HyperLogLog(b=15)
+hyperloglog = HyperLogLog(b=30)
 
 
 '''
@@ -47,8 +47,8 @@ rng = random.Random(7)
 counter = collections.Counter()
 
 
-for line in [ "123.456","123.123", "456.123"]:
-
+for line in [ 1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,23,45,78,332,5564,26246,1]:
+    #hyperloglog.update(line)
     hierarchical_hh.update(str(line))
 
 
@@ -57,7 +57,7 @@ with open('data/chess.txt', 'r') as f:
         elements = line.strip().split()
         for element in elements:
             counter.update(element)
-            spacesaving.update(element, 1)
+            #spacesaving.update(element, 1)
             hyperloglog.update(element)
             #hierarchical_hh.update(element)
 
@@ -66,13 +66,13 @@ with open('data/chess.txt', 'r') as f:
 #print(spacesaving.counts)
 
 
-#print( hierarchical_hh['21'])
+print( hyperloglog.count())
 #print(hierarchical_hh.output(phi=100))
-print(hierarchical_hh)
+#print(hierarchical_hh)
 phi = 0.01
-#heavy_hitters = hierarchical_hh.output(phi)
+heavy_hitters = hierarchical_hh.output(phi)
 #print(hierarchical_hh.totals())
-#print(heavy_hitters)
+print(heavy_hitters)
 #print(heavy_hitters)
 
 

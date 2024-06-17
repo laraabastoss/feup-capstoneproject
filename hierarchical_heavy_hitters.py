@@ -234,7 +234,7 @@ class HierarchicalHeavyHitters(base.Base):
                 self._output_node(child_node, phi, result)
 
             if child_node.ge + node.ge + node.delta_e >= phi * self.N:
-                result.append((child_key,child_node.fe + child_node.ge, child_node.fe + child_node.ge + child_node.delta_e))
+                result.append((child_key,child_node.fe + child_node.ge + child_node.delta_e))
 
             else:
                 node.Fe += child_node.Fe + child_node.ge
