@@ -40,13 +40,15 @@ class HierarchicalHeavyHitters(base.Base):
     Examples
     --------
 
+    >>> from river import sketch
+
     >>> # Define function to fetch parent of order i for child x
     >>> def custom_parent_func(x, i): 
     ...     if i < len(x):
     ...         return None  #root value
     ...     return x[:i]
 
-    >>> hierarchical_hh = HierarchicalHeavyHitters(k=10, epsilon=0.001, parent_func=custom_parent_func, root_value=None)
+    >>> hierarchical_hh = sketch.HierarchicalHeavyHitters(k=10, epsilon=0.001, parent_func=custom_parent_func, root_value=None)
 
     >>> # Update with elements
     >>> for line in [1,2,21,31,34,212,3,24]:
@@ -82,7 +84,7 @@ class HierarchicalHeavyHitters(base.Base):
     >>> phi = 0.01
     >>> heavy_hitters = hierarchical_hh.output(phi)
     >>> print(heavy_hitters)
-    [('1', 1, 1), ('212', 1, 1), ('21', 2, 2), ('24', 1, 1), ('2', 4, 4), ('31', 1, 1), ('34', 1, 1), ('3', 3, 3)]
+    [('1', 1), ('212', 1), ('21', 2), ('24', 1), ('2', 4), ('31', 1), ('34', 1), ('3', 3)]
 
     >>> # Define alternative function to fetch parent of order i for child x
     >>> def custom_parent_func2(x, i): 
@@ -90,6 +92,8 @@ class HierarchicalHeavyHitters(base.Base):
     ...     if i >= len(parts):
     ...         return None  
     ...     return '.'.join(parts[:i+1])
+
+    >>> hierarchical_hh = sketch.HierarchicalHeavyHitters(k=10, epsilon=0.001, parent_func=custom_parent_func, root_value=None)
 
     >>> # Update with elements
     >>> for line in ["123.456","123.123", "456.123"]:
@@ -276,6 +280,9 @@ class HierarchicalHeavyHitters(base.Base):
     
     def __str__(self):
         """Return a string representation of the hierarchical tree."""
+    
+        if self.root == None:
+            return "None"
         return self._print_node(self.root, 0)
 
     def _print_node(self, node: HierarchicalHeavyHitters.Node, level: int) -> str:
@@ -284,7 +291,7 @@ class HierarchicalHeavyHitters(base.Base):
         result = ''
         result += f"{indent * level}ge: {node.ge}, delta_e: {node.delta_e}, max_e: {node.max_e}\n"
         for child_key, child_node in node.children.items():
-            result += f"{indent * level}{child_key}: \n"
+            result += f"{indent * level}{child_key }: \n"
             result += self._print_node(child_node, level + 1)
         return result
     
