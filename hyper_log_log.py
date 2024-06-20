@@ -3,10 +3,10 @@ from __future__ import annotations
 import math
 import typing
 
-from river import base
+#from river import base
 
-class HyperLogLog(base.Base):
-
+#class HyperLogLog(base.Base):
+class HyperLogLog():
     """HyperLogLog algorithm for cardinality estimation.[^1][^2]
 
     The HyperLogLog algorithm is designed to estimate cardinality of a data set with the aid
@@ -27,8 +27,6 @@ class HyperLogLog(base.Base):
 
     Attributes
     ----------
-    b : int
-        The precision parameter.
     m : int
         The number of registers (2^b).
     alpha : float
@@ -110,8 +108,12 @@ class HyperLogLog(base.Base):
         """
         hash_val = hash(x)
         j = hash_val & (self.m - 1)
+ 
         w = hash_val >> self.b
+
         self.registers[j] = max(self.registers[j], self.left_most_one(w))
+       
+     
 
     
     def count(self) -> int:
@@ -119,6 +121,7 @@ class HyperLogLog(base.Base):
         Estimate the number of distinct elements.
         This method uses the harmonic mean of the registers to provide an estimate.
         """
+   
         est = self.alpha * self.m ** 2 / sum(2 ** (-reg) for reg in self.registers)
 
         if est <= 5 / 2 * self.m:

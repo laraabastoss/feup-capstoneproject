@@ -1,12 +1,12 @@
 import collections
 import random
-from river import sketch
+#from river import sketch
 from space_saving import SpaceSaving
 from hyper_log_log import HyperLogLog
 from hierarchical_heavy_hitters import HierarchicalHeavyHitters
 
 
-counter = sketch.Counter()
+#counter = sketch.Counter()
 # Create an instance of SpaceSaving with k=1000
 spacesaving = SpaceSaving(k=70)
 
@@ -47,16 +47,19 @@ rng = random.Random(7)
 counter = collections.Counter()
 
 
-for line in [ 1,2,3,4,5,6,7,8,9,1,2,3,4,45454,45454,66]:
+#for line in [ 1,2,3,4,5,6,7,8,9,1,2,3,4,45454,45454,66]:
     #hyperloglog.update(line)
-    hierarchical_hh.update(str(line))
+    #hierarchical_hh.update(str(line))
+for i in range(100):
+    spacesaving.update(i % 10)
 
+print(spacesaving.heavy_hitters)
 
-with open('data/chess.txt', 'r') as f:
-    for line in f:
-        elements = line.strip().split()
-        for element in elements:
-            counter.update(element)
+#with open('data/chess.txt', 'r') as f:
+    #for line in f:
+       # elements = line.strip().split()
+       # for element in elements:
+            #counter.update(element)
             #spacesaving.update(element, 1)
             #hyperloglog.update(element)
             #hierarchical_hh.update(element)
@@ -68,11 +71,11 @@ with open('data/chess.txt', 'r') as f:
 
 #print( hyperloglog.count())
 #print(hierarchical_hh.output(phi=100))
-print(hierarchical_hh)
-phi = 0.01
-heavy_hitters = hierarchical_hh.output(phi)
+#print(hierarchical_hh)
+#phi = 0.01
+#heavy_hitters = hierarchical_hh.output(phi)
 #print(hierarchical_hh.totals())
-print(heavy_hitters)
+#print(heavy_hitters)
 #print(heavy_hitters)
 
 

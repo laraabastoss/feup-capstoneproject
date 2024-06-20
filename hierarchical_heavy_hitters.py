@@ -3,11 +3,11 @@ import typing
 
 import math
 
-from river import base
+#from river import base
 
 
-class HierarchicalHeavyHitters(base.Base):
-
+#class HierarchicalHeavyHitters(base.Base):
+class HierarchicalHeavyHitters():
     """Full Ancestry Algorithm implementation for the Hierarchical Heavy Hitters problem.[^1]
 
     The Hierarchical Heavy Hitters problem involves identifying the most frequent items in a data stream while organizing them hierarchically. 
@@ -22,7 +22,7 @@ class HierarchicalHeavyHitters(base.Base):
     k
         The number of heavy hitters to track.
     epsilon
-        The error parameter. Smaller values increase the accuracy but also the memory usage.
+        The error parameter. Smaller values increase the accuracy but also the memory usage. Should be in $[0, 1]$.
     parent_func
         Function to fetch the parent of order i from child x. The function should return the root_value when i reached end of tree and x when i equals 0. If this parameter is not given it defaults to a function that returns the prefix of length i of the input element.
     root_value:

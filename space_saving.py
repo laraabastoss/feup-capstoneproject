@@ -4,13 +4,12 @@ import math
 import random
 import typing
 
-import numpy as np
 
-from river import base
+#from river import base
 
 
-class SpaceSaving(base.Base):
-
+#class SpaceSaving(base.Base):
+class SpaceSaving():
     """Space-Saving algorithm for finding heavy hitters.[^1]
 
     The Space-Saving algorithm is designed to find the heavy hitters in a data stream using a
@@ -44,8 +43,8 @@ class SpaceSaving(base.Base):
         Return the number of elements stored.
     total() -> int
         Return the total count.
-    most_common() -> int
-        Return the number of heavy hitters stored.
+    heavy_hitters() -> int
+        Return the heavy hitters stored.
 
     Examples
     --------
@@ -59,8 +58,9 @@ class SpaceSaving(base.Base):
     10
     >>> ss.total()
     100
-    >>> ss.most_common()
-    10
+    >>> ss.heavy_hitters
+    {0: 10, 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10}
+    
 
     References
     ----------
@@ -77,7 +77,7 @@ class SpaceSaving(base.Base):
         if x in self.counts:
             self.counts[x] += w
 
-        elif len(self.counts) > self.k:
+        elif len(self.counts) >= self.k:
             min_count_key = min(self.counts, key=self.counts.get)
             self.counts[x] = self.counts.get(min_count_key) + 1
             del self.counts[min_count_key]
@@ -98,6 +98,6 @@ class SpaceSaving(base.Base):
         return sum(self.counts.values())
     
     @property
-    def most_common(self) -> int:
-        """Return the number of heavy hitters stored."""
-        return min(len(self.counts), self.k)
+    def heavy_hitters(self):
+        """Return the heavy hitters stored."""
+        return self.counts
