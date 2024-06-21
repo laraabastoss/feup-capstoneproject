@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-import random
 import typing
 
 
@@ -11,8 +9,8 @@ class SpaceSaving(base.Base):
     """Space-Saving algorithm for finding heavy hitters.[^1]
 
     The Space-Saving algorithm is designed to find the heavy hitters in a data stream using a
-    hash map with fixed amount of memory. It keeps track of the k most frequent items at any 
-    given time, as well as their correspondant approximate frequency.
+    hash map with a fixed amount of memory. It keeps track of the k most frequent items at any 
+    given time, as well as their corresponding approximate frequency.
 
     Upon receiving a new item from the data stream, if it corresponds to a monitored element,
     the algorithm increments its counter. Conversely, if the received element does not match
@@ -48,17 +46,19 @@ class SpaceSaving(base.Base):
     --------
     >>> from river import sketch
 
-    >>> ss = sketch.SpaceSaving(k=10)
+    >>> spacesaving = sketch.SpaceSaving(k=10)
     
     >>> for i in range(100):
-    ...     ss.update(i % 10)
-  
-    >>> len(ss)
+    ...     spacesaving.update(i % 10)
+    
+    >>> print(len(spacesaving))
     10
-    >>> ss.total()
+    >>> print(spacesaving.total())
     100
-    >>> ss.heavy_hitters
+    >>> print(spacesaving.heavy_hitters)
     {0: 10, 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10}
+    >>> print(spacesaving[10])
+    10
     
 
     References
@@ -71,7 +71,6 @@ class SpaceSaving(base.Base):
         self.counts = {}
 
     def update(self, x: typing.Hashable, w: int = 1):
-
         """Update the counts with the given element."""
         if x in self.counts:
             self.counts[x] += w
@@ -83,8 +82,6 @@ class SpaceSaving(base.Base):
 
         else:
             self.counts[x] = w
-
-  
 
     def __getitem__(self, x) -> int:
         """Get the count of the given element."""

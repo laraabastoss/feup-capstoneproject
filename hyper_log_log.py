@@ -9,14 +9,14 @@ class HyperLogLog(base.Base):
 
     """HyperLogLog algorithm for cardinality estimation.[^1][^2]
 
-    The HyperLogLog algorithm is designed to estimate cardinality of a data set with the aid
-    of m bytes of auxiliary memory, know as registers.
+    The LogLog algorithm is designed to estimate cardinality of a data set with the aid
+    of m bytes of auxiliary memory, known as registers.
 
     Firstly, each element in the data set is hashed into a binary string, ensuring data is
     uniformly distributed and simulating random distribution. The algorithm hashes each element 
     into a binary string and then organizes these binary representations into registers. 
 
-    Hyper LogLog, represents an improvement over the original LogLog algorithm by utilizing a 
+    HyperLogLog, represents an improvement over the original LogLog algorithm by utilizing a 
     technique called harmonic mean to estimate the cardinality.
 
     Parameters
@@ -53,16 +53,21 @@ class HyperLogLog(base.Base):
 
     >>> from river import sketch
 
-    >>> hll = sketch.HyperLogLog(b=15)
+    >>> hyperloglog = sketch.HyperLogLog(b=15)
 
     >>> for i in range(100):
-    ...     hll.update(i)
+    ...     hyperloglog.update(i)
 
-    >>> hyperloglog.count()
+    >>> print(hyperloglog.count())
     100 
 
-    >>> len(hyperloglog)
-    100 
+    >>> hyperloglog = HyperLogLog(b=15)
+
+    >>> for i in range(100):
+    ...     hyperloglog.update(i%10)
+
+    >>> print(hyperloglog.count())  
+    10
 
     References
     ----------
