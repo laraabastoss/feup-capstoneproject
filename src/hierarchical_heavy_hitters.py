@@ -189,7 +189,6 @@ class HierarchicalHeavyHitters(base.Base):
         if (self.N % self.bucketSize == 0):
             self._compress_node(self.root)
         
-
     def _compress_node(self, node: HierarchicalHeavyHitters.Node):
         """Recursively compress nodes in the hierarchical tree."""
         if not node.children:
@@ -274,7 +273,6 @@ class HierarchicalHeavyHitters(base.Base):
     
     def __str__(self):
         """Return a string representation of the hierarchical tree."""
-    
         if self.root == None:
             return "None"
         return self._print_node(self.root, 0)

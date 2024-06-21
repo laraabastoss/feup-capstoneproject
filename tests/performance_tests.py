@@ -2,6 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pympler import asizeof
 import time
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 from space_saving import SpaceSaving
 from hyper_log_log import HyperLogLog
 from hierarchical_heavy_hitters import HierarchicalHeavyHitters
@@ -99,7 +104,6 @@ for size in sizes:
 
     # Calculate accuracy for SpaceSaving
     ground_truth_heavy_hitters = get_actual_heavy_hitters(stream, k=len(heavy_hitters))
-    print(len(set(heavy_hitters.keys()).intersection(ground_truth_heavy_hitters)))
     accuracy = len(set(heavy_hitters.keys()).intersection(ground_truth_heavy_hitters)) / len(heavy_hitters)
     accuracy_spacesaving.append( accuracy)
 

@@ -1,6 +1,12 @@
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 from space_saving import SpaceSaving
 from hyper_log_log import HyperLogLog
 from hierarchical_heavy_hitters import HierarchicalHeavyHitters
+
 
 # Space Saving
 

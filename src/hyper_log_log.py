@@ -77,7 +77,6 @@ class HyperLogLog(base.Base):
 
     """
     
-
     def __init__(self, b: int):
         self.b = b
         self.m = 2 ** b
@@ -118,9 +117,6 @@ class HyperLogLog(base.Base):
 
         self.registers[j] = max(self.registers[j], self.left_most_one(w))
        
-     
-
-    
     def count(self) -> int:
         """
         Estimate the number of distinct elements.
