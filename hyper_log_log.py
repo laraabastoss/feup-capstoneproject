@@ -3,10 +3,10 @@ from __future__ import annotations
 import math
 import typing
 
-#from river import base
+from river import base
 
-#class HyperLogLog(base.Base):
-class HyperLogLog():
+class HyperLogLog(base.Base):
+
     """HyperLogLog algorithm for cardinality estimation.[^1][^2]
 
     The HyperLogLog algorithm is designed to estimate cardinality of a data set with the aid

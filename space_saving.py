@@ -5,16 +5,14 @@ import random
 import typing
 
 
-#from river import base
+from river import base
 
-
-#class SpaceSaving(base.Base):
-class SpaceSaving():
+class SpaceSaving(base.Base):
     """Space-Saving algorithm for finding heavy hitters.[^1]
 
     The Space-Saving algorithm is designed to find the heavy hitters in a data stream using a
     hash map with fixed amount of memory. It keeps track of the k most frequent items at any 
-    given time, and well as their correspondant approximate frequency.
+    given time, as well as their correspondant approximate frequency.
 
     Upon receiving a new item from the data stream, if it corresponds to a monitored element,
     the algorithm increments its counter. Conversely, if the received element does not match
@@ -51,9 +49,10 @@ class SpaceSaving():
     >>> from river import sketch
 
     >>> ss = sketch.SpaceSaving(k=10)
+    
     >>> for i in range(100):
     ...     ss.update(i % 10)
-    ...
+  
     >>> len(ss)
     10
     >>> ss.total()
@@ -84,6 +83,8 @@ class SpaceSaving():
 
         else:
             self.counts[x] = w
+
+  
 
     def __getitem__(self, x) -> int:
         """Get the count of the given element."""

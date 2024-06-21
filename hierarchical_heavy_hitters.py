@@ -3,19 +3,18 @@ import typing
 
 import math
 
-#from river import base
+from river import base
 
+class HierarchicalHeavyHitters(base.Base):
 
-#class HierarchicalHeavyHitters(base.Base):
-class HierarchicalHeavyHitters():
     """Full Ancestry Algorithm implementation for the Hierarchical Heavy Hitters problem.[^1]
 
     The Hierarchical Heavy Hitters problem involves identifying the most frequent items in a data stream while organizing them hierarchically. 
     The Full Ancestry Algorithm leverages the hierarchical structure of the data to provide accurate frequency estimates by taking into account the frequencies of ancestor nodes.
     The algorithm operates in three principal phases:
-    - **Insertion:** For every new data element received, the algorithm recursively tries to find the element in the trie. If it is present, it increments the counter of the element by its weight. Otherwise, its parent is recursively called until finding the closest one or the root is reached.
-    - **Compression:** After every `w` updates, the compression phase is triggered to reduce space usage by merging nodes with irrelevant values. It merges nodes where the sum of their exact count and estimated error is less than or equal to the current bucket number minus one.
-    - **Output:** This function generates a list of heavy hitters with frequency estimates above a threshold given by phi*N. It traverses the hierarchical tree and aggregates the frequencies of nodes that meet the specified criteria, ensuring that the output reflects the most significant elements in the data stream.
+    - **Insertion:** For every new data element received, the algorithm recursively tries to find the element in the trie. If it is present, it increments the counter of the element by its weight. Otherwise, its parent is recursively called until finding the closest one, or the root is reached.
+    - **Compression:** After every `w` updates, the compression phase is triggered to reduce space usage by merging nodes with counts below the current bucket threshold. It merges nodes where the sum of their exact count and estimated error is less than or equal to the current bucket number minus one.
+    - **Output:** This function generates a list of heavy hitters with frequency estimates above a threshold given by phi*N. It transverses the hierarchical tree and aggregates the frequencies of nodes that meet the specified criteria, ensuring that the output reflects the most significant elements in the data stream.
 
     Parameters
     ----------
@@ -24,7 +23,7 @@ class HierarchicalHeavyHitters():
     epsilon
         The error parameter. Smaller values increase the accuracy but also the memory usage. Should be in $[0, 1]$.
     parent_func
-        Function to fetch the parent of order i from child x. The function should return the root_value when i reached end of tree and x when i equals 0. If this parameter is not given it defaults to a function that returns the prefix of length i of the input element.
+        Function to fetch the parent of order i from child x. The function should return the root_value when i has reached the end of the tree and x when i equals 0. If this parameter is not given it defaults to a function that returns the prefix of length i of the input element.
     root_value:
         The value of the root node in the hierarchical tree. This parameter defines the starting point of the hierarchy. If no root value is specified, the root will be initialized when the first data element is processed and will have the value of None.
 
@@ -42,7 +41,6 @@ class HierarchicalHeavyHitters():
 
     >>> from river import sketch
 
-    >>> # Define function to fetch parent of order i for child x
     >>> def custom_parent_func(x, i): 
     ...     if i < len(x):
     ...         return None  #root value
@@ -50,11 +48,9 @@ class HierarchicalHeavyHitters():
 
     >>> hierarchical_hh = sketch.HierarchicalHeavyHitters(k=10, epsilon=0.001, parent_func=custom_parent_func, root_value=None)
 
-    >>> # Update with elements
     >>> for line in [1,2,21,31,34,212,3,24]:
     ...     hierarchical_hh.update(str(line))
 
-    >>> # Print resulting tree
     >>> print(hierarchical_hh)
     ge: 0, delta_e: 0, max_e: 0
     : 
@@ -76,34 +72,29 @@ class HierarchicalHeavyHitters():
             34: 
                 ge: 1, delta_e: 0, max_e: 0
 
-    >>> # Output count of a single element
     >>> print( hierarchical_hh['212'])
     1
 
-    >>> # Output elemtns with Fe + ge + ∆e > phi*N
     >>> phi = 0.01
     >>> heavy_hitters = hierarchical_hh.output(phi)
     >>> print(heavy_hitters)
     [('1', 1), ('212', 1), ('21', 2), ('24', 1), ('2', 4), ('31', 1), ('34', 1), ('3', 3)]
 
-    >>> # Define alternative function to fetch parent of order i for child x
     >>> def custom_parent_func2(x, i): 
     ...     parts = x.split('.')
     ...     if i >= len(parts):
     ...         return None  
     ...     return '.'.join(parts[:i+1])
 
-    >>> hierarchical_hh = sketch.HierarchicalHeavyHitters(k=10, epsilon=0.001, parent_func=custom_parent_func, root_value=None)
+    >>> hierarchical_hh = sketch.HierarchicalHeavyHitters(k=10, epsilon=0.001, parent_func=custom_parent_func2, root_value=None)
 
-    >>> # Update with elements
-    >>> for line in ["123.456","123.123", "456.123"]:
+    >>> for line in ["123.456","123.123", "456.123", "123", "123"]:
     ...     hierarchical_hh.update(line)
 
-    >>> # Print resulting tree
     >>> print(hierarchical_hh)
     ge: 0, delta_e: 0, max_e: 0
     123: 
-        ge: 0, delta_e: 0, max_e: 0
+        ge: 2, delta_e: 0, max_e: 0
         123.456: 
             ge: 1, delta_e: 0, max_e: 0
         123.123: 
@@ -112,10 +103,13 @@ class HierarchicalHeavyHitters():
         ge: 0, delta_e: 0, max_e: 0
         456.123: 
             ge: 1, delta_e: 0, max_e: 0
+    
+    >>> heavy_hitters = hierarchical_hh.output(phi)
+    [('123.456', 1), ('123.123', 1), ('123', 4), ('456.123', 1)]
 
     References
     ----------
-    - [^1]: Graham Cormode, Flip Korn, S. Muthukrishnan, and Divesh Srivastava. Finding hierarchical heavy hitters in streaming data. Proceedings of the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 2010.
+    - [^1]: Cormode, Graham, Flip Korn, S. Muthukrishnan, and Divesh Srivastava. "Finding hierarchical heavy hitters in streaming data." Proceedings of the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining. 2010.
     """
 
     class Node:
@@ -133,7 +127,7 @@ class HierarchicalHeavyHitters():
     def __init__(self, k: int, epsilon: float, parent_func: typing.Callable[[typing.Hashable, int], typing.Hashable] = None, root_value: typing.Hashable = None):
         self.k = k
         self.epsilon = epsilon
-        self.bucketSize = math.floor(1/epsilon)
+        self.bucketSize = math.floor(1 / epsilon)
         self.N = 0
         self.root = None if root_value is None else HierarchicalHeavyHitters.Node()
         self.parent_func = parent_func if parent_func is not None else lambda x, i: None if i > len(str(x)) else str(x)[:i]
